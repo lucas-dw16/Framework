@@ -37,19 +37,17 @@ Route::post('/jobs', function () {
 });
 
 // Edit (formulier om job te bewerken)
-Route::get('/jobs/{id}/edit', function ($id) {
-    $job = Job::findOrFail($id);
+Route::get('/jobs/{job}/edit', function (Job $job) {
+    
     return view('jobs.edit', ['job' => $job]);
 });
 
 // Update (verwerk bewerking)
-Route::patch('/jobs/{id}', function ($id) {
+Route::patch('/jobs/{job}', function (Job $job) {
     request()->validate([
         'title' => ['required', 'min:3'],
         'salary' => ['required']
     ]);
-
-    $job = Job::findOrFail($id);
 
     $job->update([
         'title' => request('title'),
@@ -59,15 +57,19 @@ Route::patch('/jobs/{id}', function ($id) {
     return redirect('/jobs/' . $job->id);
 });
 
+
+
 // Show (detailpagina van één job)
-Route::get('/jobs/{id}', function ($id) {
-    $job = Job::findOrFail($id);
+Route::get('/jobs/{job}', function (Job $job) {
+ 
     return view('jobs.show', ['job' => $job]);
 });
 
 // Destroy (verwijder job)
-Route::delete('/jobs/{id}', function ($id) {
-    Job::findOrFail($id)->delete();
+Route::delete('/jobs/{job}', function (Job $job) {
+    
+    $job->delete(); 
+
     return redirect('/jobs');
 });
 
