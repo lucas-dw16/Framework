@@ -1,79 +1,37 @@
 <?php
 
+use App\Http\Controllers\JobController;
+use App\Http\Controllers\RegisteredUserController;
+use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
-use App\Models\Job;
 
-Route::get('/', function () {
-    return view('home');
-});
+// ----------------------
+// Static Pages
+// ----------------------
+Route::view('/', 'home');
+Route::view('/contact', 'contact');
 
-// Index (overzicht)
-Route::get('/jobs', function () {
-    $jobs = Job::with('employer')->latest()->simplePaginate(3);
-    return view('jobs.index', [
-        'jobs' => $jobs
-    ]);
-});
+// ----------------------
+// Jobs Routes
+// ----------------------
+Route::get('/jobs', [JobController::class, 'index']);
+Route::get('/jobs/create', [JobController::class, 'create']);
+Route::post('/jobs', [JobController::class, 'store']);
+Route::get('/jobs/{job}', [JobController::class, 'show']);
+Route::get('/jobs/{job}/edit', [JobController::class, 'edit']);
+Route::patch('/jobs/{job}', [JobController::class, 'update']);
+Route::delete('/jobs/{job}', [JobController::class, 'destroy']);
 
-// Create (form voor nieuw job)
-Route::get('/jobs/create', function () {
-    return view('jobs.create');
-});
+// ----------------------
+// Authentication Routes
+// ----------------------
+// Register
+Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+Route::post('/register', [RegisteredUserController::class, 'store']);
 
-// Store (verwerk create)
-Route::post('/jobs', function () {
-    request()->validate([
-        'title' => ['required', 'min:3'],
-        'salary' => ['required']
-    ]);
+// Login
+Route::get('/login', [SessionController::class, 'create'])->name('login');
+Route::post('/login', [SessionController::class, 'store']);
 
-    Job::create([
-        'title' => request('title'),
-        'salary' => request('salary'),
-        'employer_id' => 1
-    ]);
-
-    return redirect('/jobs');
-});
-
-// Edit (formulier om job te bewerken)
-Route::get('/jobs/{job}/edit', function (Job $job) {
-    
-    return view('jobs.edit', ['job' => $job]);
-});
-
-// Update (verwerk bewerking)
-Route::patch('/jobs/{job}', function (Job $job) {
-    request()->validate([
-        'title' => ['required', 'min:3'],
-        'salary' => ['required']
-    ]);
-
-    $job->update([
-        'title' => request('title'),
-        'salary' => request('salary')
-    ]);
-
-    return redirect('/jobs/' . $job->id);
-});
-
-
-
-// Show (detailpagina van één job)
-Route::get('/jobs/{job}', function (Job $job) {
- 
-    return view('jobs.show', ['job' => $job]);
-});
-
-// Destroy (verwijder job)
-Route::delete('/jobs/{job}', function (Job $job) {
-    
-    $job->delete(); 
-
-    return redirect('/jobs');
-});
-
-// Contact
-Route::get('/contact', function () {
-    return view('contact');
-});
+// Logout
+Route::post('/logout', [SessionController::class, 'destroy'])->middleware('auth')->name('logout');
